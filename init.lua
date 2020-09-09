@@ -61,11 +61,10 @@ local thrown_ender_pearl = {
 
 function thrown_ender_pearl:on_step(dtime, moveresult)
   local collided_with_node = moveresult.collisions[1] and moveresult.collisions[1].type == "node"
-  local player_name = self.player_name
 
   -- if it's touching the ground or it collides with a node
   if moveresult.touching_ground == true or collided_with_node then
-    local player = minetest.get_player_by_name(player_name)
+    local player = minetest.get_player_by_name(self.player_name)
 
     if player == nil then
       self.object:remove()
