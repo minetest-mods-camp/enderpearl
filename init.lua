@@ -23,7 +23,7 @@ minetest.register_craftitem("enderpearl:ender_pearl", {
           y=(dir.y * entity.initial_properties.speed),
           z=(dir.z * entity.initial_properties.speed),
       })
-      ender_pearl:set_acceleration({x=dir.x*-3, y=-entity.initial_properties.gravity, z=dir.z*-3})
+      ender_pearl:set_acceleration({x=dir.x*-4, y=-entity.initial_properties.gravity, z=dir.z*-4})
       minetest.after(0, function() player:get_inventory():remove_item("main", "enderpearl:ender_pearl") end)
     end,
   
