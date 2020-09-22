@@ -1,9 +1,11 @@
+enderpearl = {}
 local t = minetest.get_translator("enderpearl")
+local callbacks = {}
+
 
 ----------------------
 -- ! Item Section ! -- 
 ----------------------
-
 
 minetest.register_craftitem("enderpearl:ender_pearl", {
   description = "Enderpeal\n"..t("Left click to throw it@nIt will teleport you on the node it hits making you 2 damage@n(it won't work if you launch it to an unloaded world area)"),
@@ -35,7 +37,6 @@ minetest.register_craftitem("enderpearl:ender_pearl", {
 -- ! Entity Section ! -- 
 ------------------------
 
-
 -- entity declaration
 local thrown_ender_pearl = {
   initial_properties = {
@@ -52,7 +53,7 @@ local thrown_ender_pearl = {
     speed = 56,
     gravity = 32,
     damage = 2,
-    lifetime = 15
+    lifetime = 10
   },
   player_name = ""
 }
@@ -62,16 +63,26 @@ local thrown_ender_pearl = {
 function thrown_ender_pearl:on_step(dtime, moveresult)  
   local collided_with_node = moveresult.collisions[1] and moveresult.collisions[1].type == "node"
 
-  -- if it's touching the ground or it collides with a node
-  if moveresult.touching_ground == true or collided_with_node then
+  -- if it collides with a node
+  if collided_with_node then
     local player = minetest.get_player_by_name(self.player_name)
 
     if player == nil then
       self.object:remove()
+      return
+    elseif player:get_meta():get_string("ep_can_teleport") == "false" then
+      self.object:remove()
+      return
     end
 
     player:set_pos(vector.add(self.object:get_pos(), {x = 0, y = 1, z = 1}))
     player:set_hp(player:get_hp()-self.initial_properties.damage, "enderpearl")
+
+    for i=1, #callbacks do
+      local node = minetest.get_node(moveresult.collisions[1].node_pos)
+      callbacks[i](node)
+    end
+
     self.object:remove()
   end
 end
@@ -90,3 +101,32 @@ end
 
 
 minetest.register_entity("enderpearl:thrown_ender_pearl", thrown_ender_pearl)
+
+
+
+---------------------------
+-- ! Callbacks Section ! -- 
+---------------------------
+
+-- on_teleport(hit_node)
+function enderpearl.on_teleport(func)
+  table.insert(callbacks, func)
+end
+
+
+
+-----------------------
+-- ! Utils Section ! -- 
+-----------------------
+
+function enderpearl.block_teleport(player, duration)
+  if duration then
+    minetest.after(duration, function() 
+      if minetest.get_player_by_name(player:get_player_name()) then
+        player:get_meta():set_string("ep_can_teleport", "")
+      end
+    end)
+  end
+
+  player:get_meta():set_string("ep_can_teleport", "false")
+end
