@@ -74,7 +74,8 @@ function thrown_ender_pearl:on_step(dtime, moveresult)
       self.object:remove()
       return
     end
-
+    -- removing fall damage
+    player:add_player_velocity(vector.multiply(player:get_player_velocity(), -1))
     player:set_pos(vector.add(self.object:get_pos(), {x = 0, y = 1, z = 1}))
     player:set_hp(player:get_hp()-self.initial_properties.damage, "enderpearl")
 
