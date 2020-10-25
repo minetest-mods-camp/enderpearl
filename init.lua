@@ -8,7 +8,7 @@ local callbacks = {}
 ----------------------
 
 minetest.register_craftitem("enderpearl:ender_pearl", {
-  description = "Enderpeal\n"..t("Left click to throw it@nIt will teleport you on the node it hits making you 2 damage@n(it won't work if you launch it to an unloaded world area)"),
+  description = "Enderpearl\n"..t("Left click to throw it@nIt will teleport you on the node it hit making you 2 damage@n(it won't work if you launch it in an unloaded world area)"),
   inventory_image = "enderpearl.png",
   stack_max = 16,
   on_use =
