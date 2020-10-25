@@ -59,11 +59,9 @@ local thrown_ender_pearl = {
 }
 
 
-
 function thrown_ender_pearl:on_step(dtime, moveresult)  
   local collided_with_node = moveresult.collisions[1] and moveresult.collisions[1].type == "node"
 
-  -- if it collides with a node
   if collided_with_node then
     local player = minetest.get_player_by_name(self.player_name)
 
@@ -76,7 +74,7 @@ function thrown_ender_pearl:on_step(dtime, moveresult)
     end
     -- removing fall damage
     player:add_player_velocity(vector.multiply(player:get_player_velocity(), -1))
-    player:set_pos(vector.add(self.object:get_pos(), {x = 0, y = 1, z = 1}))
+    player:set_pos(vector.add(self.object:get_pos(), {x = 0, y = 1, z = 0}))
     player:set_hp(player:get_hp()-self.initial_properties.damage, "enderpearl")
 
     for i=1, #callbacks do
