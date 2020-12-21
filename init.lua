@@ -13,20 +13,12 @@ minetest.register_craftitem("enderpearl:ender_pearl", {
   stack_max = 16,
   on_use =
     function(_, player, pointed_thing)
-      local ender_pearl = minetest.add_entity(vector.add({x=0, y=1.5, z=0}, player:get_pos()), "enderpearl:thrown_ender_pearl", player:get_player_name())
-      local entity = ender_pearl:get_luaentity()
-      local yaw = player:get_look_horizontal()
-      local pitch = player:get_look_vertical()
-      local dir = player:get_look_dir()
+      local throw_starting_pos = vector.add({x=0, y=1.5, z=0}, player:get_pos())
+      local ender_pearl = minetest.add_entity(throw_starting_pos, "enderpearl:thrown_ender_pearl", player:get_player_name())
 
-      ender_pearl:set_rotation({x = -pitch, y = yaw, z = 0})
-      ender_pearl:set_velocity({
-          x=(dir.x * entity.initial_properties.speed),
-          y=(dir.y * entity.initial_properties.speed),
-          z=(dir.z * entity.initial_properties.speed),
-      })
-      ender_pearl:set_acceleration({x=dir.x*-4, y=-entity.initial_properties.gravity, z=dir.z*-4})
       minetest.after(0, function() player:get_inventory():remove_item("main", "enderpearl:ender_pearl") end)
+    
+      minetest.sound_play("enderpearl_throw", {max_hear_distance = 10, pos = player:get_pos()})
     end,
   
 })
@@ -65,7 +57,7 @@ function thrown_ender_pearl:on_step(dtime, moveresult)
   if collided_with_node then
     local player = minetest.get_player_by_name(self.player_name)
 
-    if player == nil then
+    if not player then
       self.object:remove()
       return
     elseif player:get_meta():get_string("ep_can_teleport") == "false" then
@@ -76,6 +68,7 @@ function thrown_ender_pearl:on_step(dtime, moveresult)
     player:add_player_velocity(vector.multiply(player:get_player_velocity(), -1))
     player:set_pos(vector.add(self.object:get_pos(), {x = 0, y = 1, z = 0}))
     player:set_hp(player:get_hp()-self.initial_properties.damage, "enderpearl")
+    minetest.sound_play("enderpearl_teleport", {max_hear_distance = 10, pos = player:get_pos()})
 
     for i=1, #callbacks do
       local node = minetest.get_node(moveresult.collisions[1].node_pos)
@@ -89,11 +82,25 @@ end
 
 
 function thrown_ender_pearl:on_activate(staticdata)
-  if staticdata == nil or minetest.get_player_by_name(staticdata) == nil then
+  if not staticdata or not minetest.get_player_by_name(staticdata) then
     self.object:remove()
+    return
   end
 
   self.player_name = staticdata
+  local player = minetest.get_player_by_name(staticdata)
+  local yaw = player:get_look_horizontal()
+  local pitch = player:get_look_vertical()
+  local dir = player:get_look_dir()
+
+  self.object:set_rotation({x = -pitch, y = yaw, z = 0})
+  self.object:set_velocity({
+      x=(dir.x * self.initial_properties.speed),
+      y=(dir.y * self.initial_properties.speed),
+      z=(dir.z * self.initial_properties.speed),
+  })
+  self.object:set_acceleration({x=dir.x*-4, y=-self.initial_properties.gravity, z=dir.z*-4})
+
   minetest.after(self.initial_properties.lifetime, function() self.object:remove() end)
 end
 
